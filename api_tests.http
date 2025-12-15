@@ -1,0 +1,53 @@
+### Inscription d'un nouvel utilisateur + Capture du token
+POST http://localhost:8000/api/register
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "userTest",
+    "email": "nouveau@test.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+
+> {%
+    client.global.set("auth_token", response.body.token);
+    client.log("Token d'inscription capturé : " + response.body.token);
+%}
+
+### Test de login
+POST http://localhost:8000/api/login
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": "nouveau@test.com",
+    "password": "password123"
+}
+
+> {%
+    client.global.set("auth_token", response.body.token);
+    client.log("Token capturé : " + response.body.token);
+%}
+
+### Test de génération de menu (Cas standard)
+POST http://localhost:8000/api/menu/generate
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "nb_repas": 3,
+    "preferences": "Végétarien, budget étudiant, j'aime les pâtes"
+}
+
+### Test de génération de menu (Cas gros volume > 7 repas)
+POST http://localhost:8000/api/menu/generate
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "nb_repas": 10,
+    "preferences": "Sans gluten"
+}
