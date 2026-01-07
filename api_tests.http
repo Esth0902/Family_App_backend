@@ -5,7 +5,7 @@ Accept: application/json
 
 {
     "name": "userTest",
-    "email": "nouveau@test.com",
+    "email": "user@test.com",
     "password": "password123",
     "password_confirmation": "password123"
 }
@@ -30,6 +30,15 @@ Accept: application/json
     client.log("Token capturé : " + response.body.token);
 %}
 
+### Créer un ménage pour l'utilisateur test
+POST http://localhost:8000/api/households
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "name": "Ma Famille Test"
+}
+
 ### Test de génération de menu (Cas standard)
 POST http://localhost:8000/api/menu/generate
 Content-Type: application/json
@@ -51,3 +60,52 @@ Authorization: Bearer {{auth_token}}
     "nb_repas": 10,
     "preferences": "Sans gluten"
 }
+
+
+### 1. Demander des idées à l'IA
+POST http://localhost:8000/api/recipes/suggest
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "preferences": "Végétarien, cuisine italienne",
+    "count": 3
+}
+
+### 2. Valider une idée et l'enregistrer en DB
+# Copiez un titre reçu dans la requête précédente
+POST http://localhost:8000/api/recipes/ai-store
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "household_id": 1,
+    "title": "spaghetti carbonara"
+}
+
+### 3. Créer le sondage (Poll)
+# Utilisez les IDs des recettes créées
+POST http://localhost:8000/api/meal-polls
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "household_id": 1,
+    "recipe_ids": [1, 2],
+    "duration_hours": 24
+}
+
+### 4. Voter pour une recette
+POST http://localhost:8000/api/meal-polls/1/vote
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "recipe_id": 3
+}
+
+### 5. Clôturer et générer la liste de courses
+POST http://localhost:8000/api/meal-polls/1/validate
+Authorization: Bearer {{auth_token}}
