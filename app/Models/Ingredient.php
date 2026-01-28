@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ingredient extends Model
+class Ingredient extends Model
 {
-    protected $fillable = ['name', 'unit'];
+    protected $fillable = ['name'];
 
     public function recipes()
     {
         return $this->belongsToMany(Recipe::class, 'ingredient_recipe')
-                    ->withPivot('quantity')
-                    ->withTimestamps();
+            ->withPivot('quantity', 'unit')
+            ->withTimestamps();
     }
 }

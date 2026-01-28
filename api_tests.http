@@ -21,7 +21,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-    "email": "nouveau@test.com",
+    "email": "user@test.com",
     "password": "password123"
 }
 
@@ -39,27 +39,27 @@ Authorization: Bearer {{auth_token}}
     "name": "Ma Famille Test"
 }
 
-### Test de génération de menu (Cas standard)
-POST http://localhost:8000/api/menu/generate
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{auth_token}}
-
-{
-    "nb_repas": 3,
-    "preferences": "Végétarien, budget étudiant, j'aime les pâtes"
-}
-
-### Test de génération de menu (Cas gros volume > 7 repas)
-POST http://localhost:8000/api/menu/generate
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{auth_token}}
-
-{
-    "nb_repas": 10,
-    "preferences": "Sans gluten"
-}
+#### Test de génération de menu (Cas standard)
+#POST http://localhost:8000/api/menu/generate
+#Content-Type: application/json
+#Accept: application/json
+#Authorization: Bearer {{auth_token}}
+#
+#{
+#    "nb_repas": 3,
+#    "preferences": "Végétarien, budget étudiant, j'aime les pâtes"
+#}
+#
+#### Test de génération de menu (Cas gros volume > 7 repas)
+#POST http://localhost:8000/api/menu/generate
+#Content-Type: application/json
+#Accept: application/json
+#Authorization: Bearer {{auth_token}}
+#
+#{
+#    "nb_repas": 10,
+#    "preferences": "Sans gluten"
+#}
 
 
 ### 1. Demander des idées à l'IA
@@ -72,16 +72,49 @@ Authorization: Bearer {{auth_token}}
     "count": 3
 }
 
-### 2. Valider une idée et l'enregistrer en DB
-# Copiez un titre reçu dans la requête précédente
-POST http://localhost:8000/api/recipes/ai-store
+
+### Étape 2 : Prévisualiser une recette spécifique (Preview)
+# Prend un titre du test précédent (ex: "Lasagnes aux légumes")
+POST http://localhost:8000/api/recipes/preview-ai
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-    "household_id": 1,
-    "title": "spaghetti carbonara"
+    "title": "Lasagnes aux légumes"
 }
+
+### Étape 3 : Valider et enregistrer en DB
+# Copiez ici l'objet complet reçu dans la preview
+POST http://localhost:8000/api/recipes/ai-store
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "household_id": 1,
+    "title": "Lasagnes aux légumes",
+    "description": "Un plat italien classique revisité avec des légumes pour une version végétarienne délicieuse et équilibrée",
+    "instructions": "Étape 1 : Préchauffez le four à 180°C. Étape 2 : Faites cuire les pâtes à lasagnes selon les instructions du paquet. Étape 3 : Faites revenir les oignons et les poivrons jusqu'à ce qu'ils soient tendres. Étape 4 : Ajoutez les courgettes, les tomates concassées, le basilic, l'origan, le sel et le poivre, et laissez mijoter pendant 20 minutes. Étape 5 : Mélangez la ricotta avec l'œuf et le parmesan râpé. Étape 6 : Alternez les couches de pâtes, de sauce aux légumes et de ricotta dans un plat à lasagnes. Étape 7 : Enfournez 30 à 40 minutes.",
+    "ingredients": [
+        { "name": "pâtes à lasagnes", "quantity": 250, "unit": "g" },
+        { "name": "oignon", "quantity": 1, "unit": "unité" },
+        { "name": "poivron", "quantity": 2, "unit": "unités" },
+        { "name": "courgette", "quantity": 1, "unit": "unité" },
+        { "name": "tomates concassées", "quantity": 400, "unit": "g" },
+        { "name": "basilic", "quantity": 0, "unit": "au goût" },
+        { "name": "origan", "quantity": 0, "unit": "au goût" },
+        { "name": "sel", "quantity": 0, "unit": "au goût" },
+        { "name": "poivre", "quantity": 0, "unit": "au goût" },
+        { "name": "ricotta", "quantity": 300, "unit": "g" },
+        { "name": "œuf", "quantity": 1, "unit": "unité" },
+        { "name": "parmesan râpé", "quantity": 150, "unit": "g" },
+        { "name": "fromage râpé", "quantity": 100, "unit": "g" }
+    ]
+}
+
+> {%
+    client.global.set("recipe_id", response.body.id);
+%}
 
 ### 3. Créer le sondage (Poll)
 # Utilisez les IDs des recettes créées
