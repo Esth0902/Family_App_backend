@@ -48,10 +48,20 @@ jobs:
       - name: Droits dossiers
         run: chmod -R 777 storage bootstrap/cache
 
+      - name: Installer client PostgreSQL
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Attendre PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U laravel && break
+            sleep 1
+          done
+
       - name: Lancer les migrations et les tests
         env:
           DB_CONNECTION: pgsql
-          DB_HOST: postgres
+          DB_HOST: 127.0.0.1
           DB_PORT: 5432
           DB_DATABASE: testing_db
           DB_USERNAME: laravel
