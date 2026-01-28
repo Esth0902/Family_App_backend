@@ -1,0 +1,62 @@
+name: CI Backend (Laravel)
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: testing_db
+          POSTGRES_USER: laravel
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql
+          coverage: none
+
+      - name: Copier .env
+        run: cp .env.example .env
+
+      - name: Installer dépendances
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Générer clé API
+        run: php artisan key:generate
+
+      - name: Droits dossiers
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Lancer les migrations et les tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: testing_db
+          DB_USERNAME: laravel
+          DB_PASSWORD: password
+          OPENAI_API_KEY: ${{ secrets.OPENRAI_API_KEY }}
+        run: |
+          php artisan migrate --force
+          php artisan test
