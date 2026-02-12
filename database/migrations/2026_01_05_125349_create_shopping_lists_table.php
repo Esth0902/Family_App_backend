@@ -13,21 +13,25 @@ return new class extends Migration
     {
         Schema::create('shopping_lists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('household_id')->constrained()->onDelete('cascade');
-            $table->foreignId('meal_poll_id')->nullable()->constrained(); // Optionnel si lié à un sondage
+            $table->foreignId('household_id')->constrained('households')->cascadeOnDelete();
+            $table->string('title')->nullable()->default('Ma liste de courses');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
 
         Schema::create('shopping_list_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shopping_list_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->float('quantity')->nullable();
+            $table->foreignID('shopping_list_id')->constrained('shopping_lists')->cascadeOnDelete();
+            $table->foreignId('ingredient_id')->nullable()->constrained('ingredients')->nullOnDelete();
+            $table->string('name')->nullable();
+            $table->string('quantity')->nullable();
             $table->string('unit')->nullable();
-            $table->boolean('is_bought')->default(false);
-            $table->boolean('is_manual_addition')->default(false); // Pour distinguer IA vs Manuel
+            $table->boolean('is_checked')->default(false);
+            $table->boolean('is_manual_addition')->default(false);
             $table->timestamps();
+            $table->unique(['shopping_list_id', 'ingredient_id']);
         });
+
     }
 
     /**
@@ -36,5 +40,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('shopping_lists');
+        Schema::dropIfExists('shopping_list_items');
     }
 };

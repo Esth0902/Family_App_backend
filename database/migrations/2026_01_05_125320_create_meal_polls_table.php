@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('meal_polls', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('household_id')->constrained()->onDelete('cascade');
+            $table->foreignId('household_id')->constrained()->cascadeOnDelete();
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
             $table->enum('status', ['open', 'closed', 'validated'])->default('open');
@@ -22,17 +22,20 @@ return new class extends Migration
 
         Schema::create('meal_poll_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('meal_poll_id')->constrained()->onDelete('cascade');
-            $table->foreignId('recipe_id')->constrained()->onDelete('cascade');
+            $table->foreignId('meal_poll_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('recipe_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(['meal_poll_id', 'recipe_id']);
         });
 
         Schema::create('meal_poll_votes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('meal_poll_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('recipe_id')->constrained()->onDelete('cascade'); // La recette choisie
+            $table->foreignId('meal_poll_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('meal_poll_option_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(['user_id', 'meal_poll_option_id']);
         });
     }
 

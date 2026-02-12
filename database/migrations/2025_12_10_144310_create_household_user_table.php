@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('household_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('household_id')->constrained()->onDelete('cascade');
-            $table->string('role')->default('member');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('household_id')->constrained()->cascadeOnDelete();
+            $table->string('role')->default('enfant');
             $table->string('nickname')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'household_id']);
         });
     }
 

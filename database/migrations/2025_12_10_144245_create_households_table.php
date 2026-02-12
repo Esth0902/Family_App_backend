@@ -14,8 +14,22 @@ return new class extends Migration
         Schema::create('households', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->json('settings')->nullable();
+
+            $table->string('plan_status')->default('free');
+            $table->timestamp('premium_ends_at')->nullable();
+            $table->timestamp('trial_ends_at')->nullable();
+            $table->boolean('is_lifetime_premium')->default(false);
+
+            $table->integer('week_start_day')->default(1);
+            $table->boolean('is_joint_custody')->default(false);
+            $table->foreignId('linked_household_id')
+                ->nullable()
+                ->constrained('households')
+                ->nullOnDelete();
+
             $table->timestamps();
+
+            $table->unique('linked_household_id');
         });
     }
 

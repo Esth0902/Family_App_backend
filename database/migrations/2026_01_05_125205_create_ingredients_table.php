@@ -14,13 +14,24 @@ return new class extends Migration
         Schema::create('ingredients', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->enum('category', ['fruits et légumes',
+                'boucherie',
+                'poissonnerie',
+                'crèmerie',
+                'épicerie salée',
+                'épicerie sucrée',
+                'boissons',
+                'surgelés',
+                'entretien et hygiène',
+                'autre'
+            ])->default('autre');
             $table->timestamps();
         });
 
         Schema::create('ingredient_recipe', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('recipe_id')->constrained()->onDelete('cascade');
-            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
+            $table->foreignId('recipe_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('ingredient_id')->constrained()->cascadeOnDelete();
 
             $table->float('quantity')->default(0);
             $table->string('unit')->nullable();
@@ -36,5 +47,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('ingredient_recipe');
+        Schema::dropIfExists('ingredients');
     }
 };

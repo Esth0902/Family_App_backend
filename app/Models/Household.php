@@ -8,28 +8,104 @@ use Illuminate\Database\Eloquent\Model;
 class Household extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'settings', 'poll_day', 'poll_time', 'poll_duration'];
+    protected $guarded = [];
     protected $casts = [
-        'settings' => 'array',
+        'premium_ends_at' => 'datetime',
+        'trial_ends_at' => 'datetime',
+        'is_lifetime_premium' => 'boolean',
     ];
+
     public function users()
     {
         return $this->belongsToMany(User::class)
             ->withPivot('role', 'nickname')
             ->withTimestamps();
     }
-    public function invitations()
-    {
-        return $this->hasMany(HouseholdInvitation::class);
-    }
-
     public function recipes()
     {
         return $this->hasMany(Recipe::class);
     }
 
-    public function shoppingLists()
+    public function settings()
     {
+        return $this->hasOne(HouseholdSetting::class);
+    }
+
+    public function taskTemplate()
+    {
+        return $this->hasMany(TaskTemplate::class);
+    }
+
+    public function budgetSettings()
+    {
+        return $this->hasMany(BudgetSetting::class);
+    }
+
+    public function pocketMoneyTransactions()
+    {
+        return $this->hasMany(PocketMoneyTransaction::class);
+    }
+
+    public function events() {
+        return $this->hasMany(Event::class);
+    }
+
+    public function shoppingLists() {
         return $this->hasMany(ShoppingList::class);
     }
+
+
+    public function dietaryTags()
+    {
+        return $this->belongsToMany(DietaryTag::class, 'household_dietary_tags');
+    }
+
+    public function mealSettings() {
+        return $this->hasOne(MealSetting::class);
+    }
+
+    public function mealPlans()
+    {
+        return $this->hasMany(MealPlan::class);
+    }
+
+    public function mealPolls()
+    {
+        return $this->hasMany(MealPoll::class);
+    }
+
+    public function promoCodes()
+    {
+        return $this->belongsToMany(PromoCode::class, 'household_promo_code')
+            ->withPivot('redeemed_at')
+            ->withTimestamps();
+    }
+
+    public function getDaysLeftAttribute(): int
+    {
+        if ($this->is_lifetime_premium) return 9999;
+
+        $end = $this->premium_ends_at ?? $this->trial_ends_at;
+
+        if (!$end || $end->isPast()) return 0;
+
+        return now()->diffInDays($end);
+    }
+
+    public function getIsPremiumAttribute(): bool
+    {
+        if ($this->is_lifetime_premium) {
+            return true;
+        }
+
+        if ($this->premium_ends_at && $this->premium_ends_at->isFuture()) {
+            return true;
+        }
+        if ($this->trial_ends_at && $this->trial_ends_at->isFuture()) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

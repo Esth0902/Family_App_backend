@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('household_id')->constrained()->onDelete('cascade');
             $table->string('title');
+            $table->enum('type', ['petit-déjeuner', 'entrée', 'plat principal', 'dessert', 'collation', 'boisson', 'autre']) ->default('plat principal');
             $table->text('description')->nullable();
             $table->text('instructions')->nullable();
             $table->boolean('is_ai_generated')->default(false);
+            $table->string('source_url')->nullable();
             $table->timestamps();
         });
     }
